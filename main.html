@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html lang="ja">
+
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>Document</title>
+	<style>
+		* {
+			padding: 0;
+			margin: 0;
+			font-family: 'JF-Dot-Shinonome';
+			font-weight: normal;
+			text-align: center;
+			color: #fff;
+			box-sizing: border-box;
+			font-size: 32px;
+		}
+
+		html {
+			padding: 16px;
+			background-color: #00000000;
+		}
+
+		h3 {
+			padding-top: 2px;
+			padding-bottom: 2px;
+		}
+
+		table {
+			display: inline-table;
+		}
+
+		td {
+			padding: 0 4px;
+		}
+
+		.table-label {
+			text-align: left;
+		}
+
+		#RoomLive {
+			color: #c4ffff;
+		}
+
+		#liveCounter {
+			font-size: 24px;
+		}
+
+		#box {
+			display: inline-block;
+			padding: 24px 36px 16px 32px;
+			background-color: #00000080;
+			position: relative;
+			border: solid 2px white;
+			width: 480px;
+		}
+
+		#box::before {
+			display: inline-table;
+			position: absolute;
+			right: 0;
+			left: 0;
+			top: -16px;
+			background-color: #000;
+			margin: 0 auto;
+			padding: 0 8px;
+			content: "ToN Overlay";
+			font-size: 36px;
+			color: rgb(184, 0, 0);
+		}
+
+		@font-face {
+			font-family: "JF-Dot-Shinonome";
+			src: url('./font/JF-Dot-Shinonome14.ttf');
+		}
+	</style>
+</head>
+
+<body>
+	<div id="box">
+		<div>
+			<table id="liveCounter">
+				<tr>
+					<td>Live</td>
+					<td>/</td>
+					<td>Play</td>
+				</tr>
+				<tr>
+					<td id="RoomLive">0</td>
+					<td></td>
+					<td id="RoomPlay">0</td>
+				</tr>
+			</table>
+		</div>
+		<h3 id="RoundType" colspan="2">コネクション...</h3>
+		<div>
+			<table>
+				<tr>
+					<td class="table-label">Map:</td>
+					<td id="MapName">???</td>
+				</tr>
+				<tr>
+					<td class="table-label">Terror:</td>
+					<td class="TerrorName" id="tn1">???</td>
+				</tr>
+				<tr>
+					<td></td>
+					<td class="TerrorName" id="tn2"></td>
+				</tr>
+				<tr>
+					<td></td>
+					<td class="TerrorName" id="tn3"></td>
+				</tr>
+			</table>
+		</div>
+	</div>
+</body>
+<script>
+	const url = "ws://localhost:11398";
+	const ws = new WebSocket(url);
+	let liveCount = 0;
+	let deathCount = 0;
+
+	// getColorCodeForDecimal
+	function getColorCodeForDecimal(number) {
+		return "#" + number.toString(16).padStart(6, '0');
+	}
+
+	// setRoundInfo
+	function setRoundInfo(json) {
+		const roundSpan = document.getElementById("RoundType");
+		roundSpan.innerText = json.DisplayName;
+		roundSpan.style.color = getColorCodeForDecimal(json.DisplayColor);
+	}
+
+	// setMapInfo
+	function setMapInfo(json) {
+		const mapSpan = document.getElementById("MapName");
+		mapSpan.innerText = json.Name;
+	}
+
+	// setTerrorInfo
+	function setTerrorInfo(json) {
+		const terrorSpan = document.querySelectorAll(".TerrorName");
+		console.log(terrorSpan);
+		if (json.Names == null) {
+			const tmp = [json.DisplayName, null, null];
+			for (let i = 0; i < 3; i++) {
+				console.log(i);
+
+				terrorSpan[i].innerText = tmp[i] ?? "";
+				terrorSpan[i].style.color = "#FFF";
+			}
+		} else {
+			for (let i = 0; i < 3; i++) {
+				console.log(i);
+				terrorSpan[i].innerText = json.Names[i] ?? "";
+				terrorSpan[i].style.color = getColorCodeForDecimal(json.DisplayColor);
+			}
+		}
+	}
+
+	// live
+	function setLobbyLiveTime(json) {
+		liveCount = document.getElementById("RoomLive").innerText = json.Value;
+		updatePlayCount();
+	}
+
+	// death
+	function updateDeathsCounter(json) {
+		deathCount = json.Value;
+		updatePlayCount();
+	}
+
+	// updatePlayCount;
+	function updatePlayCount() {
+		document.getElementById("RoomPlay").innerText = liveCount + deathCount;
+	}
+
+	// total play
+	function setLobbyPlayTime(json) {
+		document.getElementById("RoomPlay").innerText = json.Value;
+	}
+
+	// updateData
+	function updateData(json) {
+		// main
+		switch (json.Type) {
+			case "ROUND_TYPE":
+				setRoundInfo(json);
+				break;
+			case "LOCATION":
+				setMapInfo(json);
+				break;
+			case "TERRORS":
+				setTerrorInfo(json);
+				break;
+			case "CONNECTED":
+				const tmp = json.Args.slice(-100);
+
+				for (const i in tmp) {
+					updateData(tmp[i]);
+				}
+			case "STATS":
+				switch (json.Name) {
+					case "LobbyRounds":
+						setLobbyPlayTime(json);
+						break;
+					case "LobbyDeaths":
+						updateDeathsCounter(json);
+						break;
+					case "LobbySurvivals":
+						setLobbyLiveTime(json);
+						break;
+				}
+		}
+	}
+
+	//connection success
+	ws.onopen = (ev) => {
+		console.log("connect successfully");
+	}
+
+	// receive
+	ws.onmessage = (ev) => {
+		const json = JSON.parse(ev.data);
+		//debug
+		if (json.Type != "STATS" || (json.Type != "DAMAGED" || json.Type == "enemy_enraged")) {
+			console.log(json);
+		}
+
+		updateData(json);
+	}
+
+	// error
+	ws.onerror = (ev) => {
+		console.error(ev);
+	}
+
+	// disconnect
+	ws.close = (ev) => {
+		console.log("quit");
+
+	}
+</script>
+
+</html>
