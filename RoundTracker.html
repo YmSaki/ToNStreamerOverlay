@@ -1,0 +1,326 @@
+<!DOCTYPE html>
+<html lang="ja">
+
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>Document</title>
+	<style>
+		* {
+			padding: 0;
+			margin: 0;
+			font-family: 'JF-Dot-Shinonome';
+			font-weight: normal;
+			text-align: center;
+			box-sizing: border-box;
+			font-size: 32px;
+		}
+
+		html {
+			padding: 16px;
+			background-color: #00000000;
+			color: #fff;
+		}
+
+		#box {
+			display: inline-block;
+			padding: 24px 36px 16px 32px;
+			background-color: #000000;
+			position: relative;
+			border: solid 2px white;
+		}
+
+		table {
+			display: inline-table;
+		}
+
+		table td {
+			border: 1px white solid;
+		}
+
+		.label-cell {
+			text-align: center;
+		}
+
+		.info-cell {
+			-webkit-writing-mode: vertical-rl;
+			-ms-writing-mode: tb-rl;
+			writing-mode: vertical-rl;
+		}
+
+		.label-cell span {
+			display: inline-block;
+		}
+
+
+		td {
+			padding: 0 4px;
+		}
+
+		@font-face {
+			font-family: "JF-Dot-Shinonome";
+			src: url('./font/JF-Dot-Shinonome14.ttf');
+		}
+
+		#Classic,
+		#eight-page {
+			color: #ffffff;
+		}
+
+		#Sabotage {
+			color: #3bf37d;
+		}
+
+		#Ghost {
+			color: #c3f7ff
+		}
+
+		#Fog {
+			color: #808486;
+		}
+
+		#Midnight {
+			color: #ff0000;
+		}
+
+		#Cracked {
+			color: #ff00d3;
+		}
+
+		#Bloodbath,
+		#Double_Trouble,
+		#BloodMoon {
+			color: #f51313;
+		}
+
+		#Alternate {
+			color: #f1f1f1;
+		}
+
+		#Mystic {
+			color: #b0def9;
+		}
+
+		#Solstice {
+			color: #3bf3b3;
+		}
+
+		#Punished {
+			color: #fff800;
+		}
+
+		#Run {
+			color: #c15e3d;
+		}
+	</style>
+</head>
+
+<body>
+	<div id="box">
+		<div>
+			<table>
+				<tr>
+					<td colspan="5">ラウンド (<span id="roundSum">-</span>)</td>
+				</tr>
+				<!-- 通常ラウンド -->
+				<tr>
+					<td class="info-cell" id="classic" rowspan="2">通常</td>
+					<td class="label-cell" colspan="2" id="Classic">クラシック</td>
+					<td class="label-cell" colspan="2" id="Run">走れ</td>
+				</tr>
+				<tr>
+					<td class="counter" colspan="2"><span id="Classic-Input">-</span></td>
+					<td class="counter" colspan="2"><span id="Run-Input">-</span></td>
+				</tr>
+				<!-- 特殊ラウンド -->
+				<tr>
+					<td class="info-cell" rowspan="6">特殊</td>
+					<td class="label-cell" id="Punished">パニッシュ</td>
+					<td class="label-cell" id="Sabotage">サボタージュ</td>
+					<td class="label-cell" id="Fog">霧</td>
+					<td class="label-cell" id="Ghost">ゴースト</td>
+				</tr>
+				<tr>
+					<td class="counter"><span id="Punished-Input">-</span></td>
+					<td class="counter"><span id="Sabotage-Input">-</span></td>
+					<td class="counter"><span id="Fog-Input">-</span>(<span id="Fog-Alternate-Input">-</span>)</td>
+					<td class="counter"><span id="Ghost-Input">-</span>(<span id="Ghost-Alternate-Input">-</span>)</td>
+				</tr>
+				<tr>
+					<td class="label-cell" id="Bloodbath"><span>ブラッド</span><span>バス</span></td>
+					<td class="label-cell" id="Double_Trouble">
+						<span>ダブル</span><span>トラブル</span><span>/</span><span>EX</span>
+					</td>
+					<td class="label-cell" id="Cracked">狂気</td>
+					<td class="label-cell" id="Unbound">アンバウンド</td>
+				</tr>
+				<tr>
+					<td class="counter"><span id="Bloodbath-Input">-</span></td>
+					<td class="counter"><span id="Trouble-Input">-</span>(<span id="EX-Input">-</span>)</td>
+					<td class="counter"><span id="Cracked-Input">-</span></td>
+					<td class="counter"><span id="Unbound-Input">-</span></td>
+				</tr>
+				<tr>
+					<td class="label-cell" id="Alternate"><span>オルタ</span><span>ネイト</span></td>
+					<td class="label-cell" id="Midnight"><span>ミッド</span><span>ナイト</span></td>
+					<td class="label-cell" id="eight-page">8ページ</td>
+					<td class="label-cell" id="Winterfest"><span>コールド</span><span>ナイト</span></td>
+				</tr>
+				<tr>
+					<td class="counter"><span id="Alternate-Input">-</span></td>
+					<td class="counter"><span id="Midnight-Input">-</span></td>
+					<td class="counter"><span id="eight-page-Input">-</span></td>
+					<td class="counter"><span id="Winterfest-Input">-</span></td>
+				</tr>
+				<!-- ムーン -->
+				<tr>
+					<td class="info-cell" rowspan="2">ム｜ン</td>
+					<td class="label-cell" id="Mystic">ミスティック</td>
+					<td class="label-cell" id="BloodMoon">ブラッド</td>
+					<td class="label-cell" id="Twilight">トワイライト</td>
+					<td class="label-cell" id="Solstice">ソルスティス</td>
+				</tr>
+				<tr>
+					<td class="counter"><span id="Mystic-Input">-</span></td>
+					<td class="counter"><span id="BloodMoon-Input">-</span></td>
+					<td class="counter"><span id="Twilight-Input">-</span></td>
+					<td class="counter"><span id="Solstice-Input">-</span></td>
+				</tr>
+			</table>
+		</div>
+	</div>
+</body>
+<script>
+	const url = "ws://localhost:11398";
+	const ws = new WebSocket(url);
+	const RoundType = {};
+	let nowInstance = "";
+	const RoundList = [
+		// Basic rounds
+		{ id: 0, round: "Unknown", inTag: null },
+		{ id: 1, round: "Classic", inTag: "Classic-Input" },
+		{ id: 2, round: "Fog", inTag: "Fog-Input" },
+		{ id: 3, round: "Punished", inTag: "Punished-Input" },
+		{ id: 4, round: "Sabotage", inTag: "Sabotage-Input" },
+		{ id: 5, round: "Cracked", inTag: "Cracked-Input" },
+		{ id: 6, round: "Bloodbath", inTag: "Bloodbath-Input" },
+		{ id: 7, round: "Double_Trouble", inTag: "Trouble-Input" },
+		{ id: 8, round: "EX", inTag: "EX-Input" },
+		{ id: 9, round: "Ghost", inTag: "Ghost-Input" },
+		{ id: 10, round: "Unbound", inTag: "Unbound-Input" },
+
+		// Alternate rounds
+		{ id: 50, round: "Midnight", inTag: "Midnight-Input" },
+		{ id: 51, round: "Alternate", inTag: "Alternate-Input" },
+		{ id: 52, round: "Fog_Alternate", inTag: "Fog-Alternate-Input" },
+		{ id: 53, round: "Ghost_Alternate", inTag: "Ghost-Alternate-Input" },
+
+		// Moon rounds
+		{ id: 100, round: "Mystic_Moon", inTag: "Mystic-Input" },
+		{ id: 101, round: "Blood_Moon", inTag: "BloodMoon-Input" },
+		{ id: 102, round: "Twilight", inTag: "Twilight-Input" },
+		{ id: 103, round: "Solstice", inTag: "Solstice-Input" },
+
+		// Special rounds
+		{ id: 104, round: "RUN", inTag: "Run-Input" },
+		{ id: 105, round: "Eight_Pages", inTag: "eight-page-Input" },
+		{ id: 107, round: "COLD NIGHT (Winterfest)", inTag: "Winterfest-Input" }
+	];
+
+	function setRoundInfo(json) {
+		if (json.Command != 0) {
+			console.log(`${json.Name},${json.Value}`);
+			console.log(json);
+
+			RoundType[json.Name] = (RoundType[json.Name] ?? 0) + 1;
+			updateRoundData();
+		}
+	}
+
+	function updateRoundData() {
+		for (const [name, count] of Object.entries(RoundType)) {
+			// RoundListから対応するラウンドを検索
+			const round = RoundList.find(item => item.round === name);
+			if (round && round.inTag) {
+				const element = document.getElementById(round.inTag);
+				if (element) {
+					// カウントをHTML要素に反映
+					element.textContent = count;
+				} else {
+					console.warn(`Warning: Element with ID "${round.inTag}" not found.`);
+				}
+			} else {
+				console.warn(`Warning: Round with name "${name}" not found in RoundList.`);
+			}
+		}
+		document.getElementById("roundSum").innerText = getRoundInfo();
+	}
+
+	function updateInstanceInfo(json) {
+		if (json.Value != nowInstance) {
+			nowInstance = json.Value;
+			RoundType = {};
+		}
+	}
+
+	function getRoundInfo() {
+		let sum = -RoundType["Fog_Alternate"] || 0;
+		for (const key in RoundType) {
+			//const counter = RoundType[key];
+			//console.log(`${key}:${RoundType[key]}`);
+			sum += RoundType[key];
+		}
+		return sum;
+	}
+
+	// updateData
+	function updateData(json) {
+		// main
+		switch (json.Type) {
+			case "ROUND_TYPE":
+				setRoundInfo(json);
+				break;
+			case "CONNECTED":
+				const tmp = json.Args;
+				console.log(tmp);
+
+				for (const i in tmp) {
+					updateData(tmp[i]);
+				}
+				console.log("end-init");
+				break;
+			case "INSTANCE":
+				console.log(json);
+				break;
+		}
+	}
+
+	//connection success
+	ws.onopen = (ev) => {
+		console.log("connect successfully");
+	}
+
+	// receive
+	ws.onmessage = (ev) => {
+		const json = JSON.parse(ev.data);
+		//debug
+		if (json.Type != "STATS" || (json.Type != "DAMAGED" || json.Type == "enemy_enraged")) {
+			// console.log(json);
+		}
+
+		updateData(json);
+	}
+
+	// error
+	ws.onerror = (ev) => {
+		console.error(ev);
+	}
+
+	// disconnect
+	ws.close = (ev) => {
+		console.log("quit");
+
+	}
+</script>
+
+</html>
