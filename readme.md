@@ -4,3 +4,7 @@ ToN Save Manager<br>
 ⇒設定からWebSocket APIサーバーを有効にしてね。
 
 ## 何が表示される？
+### ToN Overlay
+![ToN Overlay](image/Overlay.png)
+### RoundTracker
+![RoundTracker](image/roundTracker.png)
