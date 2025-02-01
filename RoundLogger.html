@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="ja">
+
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>Document</title>
+	<style>
+		* {
+			padding: 0;
+			margin: 0;
+			font-family: 'JF-Dot-Shinonome';
+			font-weight: normal;
+			text-align: center;
+			box-sizing: border-box;
+			font-size: 32px;
+		}
+
+		html {
+			padding: 16px;
+			background-color: #00000000;
+			color: #fff;
+		}
+
+		#box {
+			display: inline-block;
+			padding: 24px 36px 16px 32px;
+			background-color: #000000;
+			position: relative;
+			border: solid 2px white;
+			overflow: hidden;
+		}
+
+		#roundList {
+			display: block;
+			max-height: calc(100vh - 116px);
+			margin-top: 12px;
+			overflow-y: scroll;
+			-ms-overflow-style: none;
+			/* IE and Edge */
+			scrollbar-width: none;
+			/* Firefox */
+		}
+
+		#roundList::-webkit-scrollbar {
+			display: none;
+			/* Chrome, Safari, and Opera */
+		}
+
+		.dead {
+			color: #dd0000;
+		}
+
+		td {
+			text-align: left;
+			vertical-align: text-top;
+			padding: 2px 0px 12px;
+		}
+
+		tr>td:not(:last-child) {
+			padding-right: 8px;
+		}
+
+		@font-face {
+			font-family: "JF-Dot-Shinonome";
+			src: url('./font/JF-Dot-Shinonome14.ttf');
+		}
+	</style>
+</head>
+
+<body>
+	<div id="box">
+		<h3>ラウンドリスト</h3>
+		<table id="roundList"></table>
+	</div>
+</body>
+<script>
+	const url = "ws://localhost:11398";
+	const ws = new WebSocket(url);
+	const RoundLog = [];
+	let nowLogCounter = 0;
+	let RoundId = 0;
+
+	function updateLog() {
+		const tmp = RoundLog.slice(nowLogCounter);
+		nowLogCounter = RoundLog.length;
+		addListData(tmp);
+	}
+
+	function addListData(inData) {
+		const data = inData.shift();
+		if (data != undefined) {
+			console.log(data);
+			const item = document.createElement("tr");
+			const isLive = document.createElement("td");
+			const round = document.createElement("td");
+			const terror = document.createElement("td");
+
+			isLive.innerText = data.isLive ? "生存" : "死亡";
+			isLive.classList.add(data.isLive ? "alive" : "dead");
+			round.innerText = data.roundName;
+			terror.innerText = data.terrorNames.join('\n');
+
+			item.appendChild(isLive);
+			item.appendChild(round);
+			item.appendChild(terror);
+
+			document.getElementById("roundList").prepend(item);
+		}
+	}
+
+	function setRoundInfo(json) {
+		RoundId = json.Value;
+		if (json.Value != 0) {
+			RoundLog.push({
+				roundName: json.DisplayName,
+				terrorNames: [],
+				isLive: true
+			});
+		}
+	}
+
+	function setTerrorInfo(json) {
+		if (RoundId != 0) {
+			RoundLog[RoundLog.length - 1].terrorNames = json.Names;
+		}
+	}
+
+	function setIsAlive(json) {
+		if (RoundId != 0 && RoundLog[RoundLog.length - 1].isLive) {
+			RoundLog[RoundLog.length - 1].isLive = json.Value;
+		}
+	}
+
+	// updateData
+	function updateData(json) {
+		// main
+		switch (json.Type) {
+			case "ROUND_TYPE":
+				setRoundInfo(json);
+				break;
+			case "CONNECTED":
+				const tmp = json.Args;
+				console.log(json);
+
+				for (const i in tmp) {
+					updateData(tmp[i]);
+				}
+				break;
+			case "TERRORS":
+				setTerrorInfo(json);
+				break;
+
+			case "ALIVE":
+				setIsAlive(json);
+				break;
+			case "ROUND_ACTIVE":
+				if (!json.Value) {
+					updateLog();
+				}
+				break;
+			case "INSTANCE":
+				console.log(json);
+				break;
+		}
+	}
+
+	//connection success
+	ws.onopen = (ev) => {
+		console.log("connect successfully");
+	}
+
+	// receive
+	ws.onmessage = (ev) => {
+		const json = JSON.parse(ev.data);
+		//debug
+		if (json.Type != "STATS" || (json.Type != "DAMAGED" || json.Type == "enemy_enraged")) {
+			// console.log(json);
+		}
+
+		updateData(json);
+	}
+
+	// error
+	ws.onerror = (ev) => {
+		console.error(ev);
+	}
+
+	// disconnect
+	ws.close = (ev) => {
+		console.log("quit");
+
+	}
+</script>
+
+</html>
